@@ -221,118 +221,55 @@ onScroll();
       }
     }
   }
-// ── PLANETS ────────────────────────────────────
+
+ // ── PLANETS ────────────────────────────────────
   const planets = [
     {
-      // Ice blue planet — top left
       getX: () => W * 0.12,
       getY: () => H * 0.18,
       radius: 45,
       draw(cx, cy) {
-        // Atmosphere glow
-        const atmo = ctx.createRadialGradient(cx, cy, this.radius * 0.8, cx, cy, this.radius * 2);
-        atmo.addColorStop(0, 'rgba(77,159,255,0.08)');
-        atmo.addColorStop(1, 'rgba(77,159,255,0)');
-        ctx.beginPath();
-        ctx.arc(cx, cy, this.radius * 2, 0, Math.PI * 2);
-        ctx.fillStyle = atmo;
-        ctx.fill();
-        // Planet body
-        const body = ctx.createRadialGradient(cx - this.radius * 0.3, cy - this.radius * 0.3, 0, cx, cy, this.radius);
-        body.addColorStop(0, 'rgba(140,200,255,0.9)');
-        body.addColorStop(0.5, 'rgba(60,130,220,0.85)');
-        body.addColorStop(1, 'rgba(20,60,140,0.8)');
         ctx.beginPath();
         ctx.arc(cx, cy, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = body;
-        ctx.fill();
-        // Subtle shine
-        const shine = ctx.createRadialGradient(cx - this.radius * 0.35, cy - this.radius * 0.35, 0, cx, cy, this.radius);
-        shine.addColorStop(0, 'rgba(255,255,255,0.15)');
-        shine.addColorStop(0.4, 'rgba(255,255,255,0)');
-        ctx.beginPath();
-        ctx.arc(cx, cy, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = shine;
-        ctx.fill();
+        ctx.strokeStyle = 'rgba(77,159,255,0.25)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
       }
     },
     {
-      // Purple gas giant with ring — top right
+      // With ring
       getX: () => W * 0.88,
       getY: () => H * 0.22,
       radius: 55,
       draw(cx, cy) {
-        // Atmosphere glow
-        const atmo = ctx.createRadialGradient(cx, cy, this.radius * 0.8, cx, cy, this.radius * 2.2);
-        atmo.addColorStop(0, 'rgba(155,109,255,0.1)');
-        atmo.addColorStop(1, 'rgba(155,109,255,0)');
-        ctx.beginPath();
-        ctx.arc(cx, cy, this.radius * 2.2, 0, Math.PI * 2);
-        ctx.fillStyle = atmo;
-        ctx.fill();
-        // Ring (behind planet)
+        // Ring
         ctx.save();
         ctx.translate(cx, cy);
         ctx.scale(1, 0.25);
-        const ring = ctx.createRadialGradient(0, 0, this.radius * 1.1, 0, 0, this.radius * 1.9);
-        ring.addColorStop(0, 'rgba(155,109,255,0.35)');
-        ring.addColorStop(0.5, 'rgba(155,109,255,0.15)');
-        ring.addColorStop(1, 'rgba(155,109,255,0)');
         ctx.beginPath();
-        ctx.arc(0, 0, this.radius * 1.9, 0, Math.PI * 2);
-        ctx.fillStyle = ring;
-        ctx.fill();
+        ctx.arc(0, 0, this.radius * 1.7, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(155,109,255,0.2)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
         ctx.restore();
-        // Planet body
-        const body = ctx.createRadialGradient(cx - this.radius * 0.3, cy - this.radius * 0.3, 0, cx, cy, this.radius);
-        body.addColorStop(0, 'rgba(200,170,255,0.9)');
-        body.addColorStop(0.5, 'rgba(130,80,230,0.85)');
-        body.addColorStop(1, 'rgba(60,20,140,0.8)');
+        // Planet
         ctx.beginPath();
         ctx.arc(cx, cy, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = body;
-        ctx.fill();
-        // Shine
-        const shine = ctx.createRadialGradient(cx - this.radius * 0.35, cy - this.radius * 0.35, 0, cx, cy, this.radius);
-        shine.addColorStop(0, 'rgba(255,255,255,0.12)');
-        shine.addColorStop(0.4, 'rgba(255,255,255,0)');
-        ctx.beginPath();
-        ctx.arc(cx, cy, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = shine;
-        ctx.fill();
+        ctx.strokeStyle = 'rgba(155,109,255,0.25)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
       }
     },
     {
-      // Small teal planet — bottom left
       getX: () => W * 0.07,
       getY: () => H * 0.75,
       radius: 28,
       draw(cx, cy) {
-        // Atmosphere
-        const atmo = ctx.createRadialGradient(cx, cy, this.radius * 0.8, cx, cy, this.radius * 2);
-        atmo.addColorStop(0, 'rgba(40,200,220,0.08)');
-        atmo.addColorStop(1, 'rgba(40,200,220,0)');
-        ctx.beginPath();
-        ctx.arc(cx, cy, this.radius * 2, 0, Math.PI * 2);
-        ctx.fillStyle = atmo;
-        ctx.fill();
-        // Body
-        const body = ctx.createRadialGradient(cx - this.radius * 0.3, cy - this.radius * 0.3, 0, cx, cy, this.radius);
-        body.addColorStop(0, 'rgba(120,230,240,0.9)');
-        body.addColorStop(0.5, 'rgba(30,170,190,0.85)');
-        body.addColorStop(1, 'rgba(10,80,110,0.8)');
         ctx.beginPath();
         ctx.arc(cx, cy, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = body;
-        ctx.fill();
-        // Shine
-        const shine = ctx.createRadialGradient(cx - this.radius * 0.35, cy - this.radius * 0.35, 0, cx, cy, this.radius);
-        shine.addColorStop(0, 'rgba(255,255,255,0.15)');
-        shine.addColorStop(0.4, 'rgba(255,255,255,0)');
-        ctx.beginPath();
-        ctx.arc(cx, cy, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = shine;
-        ctx.fill();
+        ctx.strokeStyle = 'rgba(40,200,220,0.2)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
       }
     }
   ];
