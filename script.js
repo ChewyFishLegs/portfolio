@@ -221,86 +221,117 @@ onScroll();
       }
     }
   }
-
+// ── PLANETS ────────────────────────────────────
   const planets = [
     {
-      // Ice planet — blue/white with horizontal bands
+      // Ice blue planet — top left
       getX: () => W * 0.12,
       getY: () => H * 0.18,
-      radius: 10,
+      radius: 45,
       draw(cx, cy) {
-        drawPixelCircle(cx, cy, this.radius, (px, py, dist, r) => {
-          const light = dist / r;
-          const band  = Math.floor((py + r) / 3) % 2;
-          if (light > 0.92) return `rgba(220,240,255,0.9)`;
-          if (band === 0)    return `rgba(77,140,220,${0.7 - light * 0.3})`;
-          return                    `rgba(110,170,255,${0.65 - light * 0.25})`;
-        });
-        // Glow
-        const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, this.radius * PIXEL * 1.8);
-        grd.addColorStop(0, 'rgba(77,159,255,0.12)');
-        grd.addColorStop(1, 'rgba(77,159,255,0)');
+        // Atmosphere glow
+        const atmo = ctx.createRadialGradient(cx, cy, this.radius * 0.8, cx, cy, this.radius * 2);
+        atmo.addColorStop(0, 'rgba(77,159,255,0.08)');
+        atmo.addColorStop(1, 'rgba(77,159,255,0)');
         ctx.beginPath();
-        ctx.arc(cx, cy, this.radius * PIXEL * 1.8, 0, Math.PI * 2);
-        ctx.fillStyle = grd;
+        ctx.arc(cx, cy, this.radius * 2, 0, Math.PI * 2);
+        ctx.fillStyle = atmo;
+        ctx.fill();
+        // Planet body
+        const body = ctx.createRadialGradient(cx - this.radius * 0.3, cy - this.radius * 0.3, 0, cx, cy, this.radius);
+        body.addColorStop(0, 'rgba(140,200,255,0.9)');
+        body.addColorStop(0.5, 'rgba(60,130,220,0.85)');
+        body.addColorStop(1, 'rgba(20,60,140,0.8)');
+        ctx.beginPath();
+        ctx.arc(cx, cy, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = body;
+        ctx.fill();
+        // Subtle shine
+        const shine = ctx.createRadialGradient(cx - this.radius * 0.35, cy - this.radius * 0.35, 0, cx, cy, this.radius);
+        shine.addColorStop(0, 'rgba(255,255,255,0.15)');
+        shine.addColorStop(0.4, 'rgba(255,255,255,0)');
+        ctx.beginPath();
+        ctx.arc(cx, cy, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = shine;
         ctx.fill();
       }
     },
     {
-      // Purple gas giant with ring
+      // Purple gas giant with ring — top right
       getX: () => W * 0.88,
-      getY: () => H * 0.28,
-      radius: 13,
+      getY: () => H * 0.22,
+      radius: 55,
       draw(cx, cy) {
+        // Atmosphere glow
+        const atmo = ctx.createRadialGradient(cx, cy, this.radius * 0.8, cx, cy, this.radius * 2.2);
+        atmo.addColorStop(0, 'rgba(155,109,255,0.1)');
+        atmo.addColorStop(1, 'rgba(155,109,255,0)');
+        ctx.beginPath();
+        ctx.arc(cx, cy, this.radius * 2.2, 0, Math.PI * 2);
+        ctx.fillStyle = atmo;
+        ctx.fill();
         // Ring (behind planet)
         ctx.save();
         ctx.translate(cx, cy);
-        ctx.scale(1, 0.3);
+        ctx.scale(1, 0.25);
+        const ring = ctx.createRadialGradient(0, 0, this.radius * 1.1, 0, 0, this.radius * 1.9);
+        ring.addColorStop(0, 'rgba(155,109,255,0.35)');
+        ring.addColorStop(0.5, 'rgba(155,109,255,0.15)');
+        ring.addColorStop(1, 'rgba(155,109,255,0)');
         ctx.beginPath();
-        ctx.arc(0, 0, this.radius * PIXEL * 1.7, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(155,109,255,0.25)';
-        ctx.lineWidth = PIXEL * 2.5;
-        ctx.stroke();
+        ctx.arc(0, 0, this.radius * 1.9, 0, Math.PI * 2);
+        ctx.fillStyle = ring;
+        ctx.fill();
         ctx.restore();
-
-        drawPixelCircle(cx, cy, this.radius, (px, py, dist, r) => {
-          const light = dist / r;
-          const stripe = Math.floor((py + r) / 4) % 3;
-          if (light > 0.9) return `rgba(200,180,255,0.95)`;
-          if (stripe === 0) return `rgba(120,70,220,${0.75 - light * 0.2})`;
-          if (stripe === 1) return `rgba(155,109,255,${0.7 - light * 0.2})`;
-          return                   `rgba(90,50,180,${0.7 - light * 0.2})`;
-        });
-
-        // Glow
-        const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, this.radius * PIXEL * 2);
-        grd.addColorStop(0, 'rgba(155,109,255,0.1)');
-        grd.addColorStop(1, 'rgba(155,109,255,0)');
+        // Planet body
+        const body = ctx.createRadialGradient(cx - this.radius * 0.3, cy - this.radius * 0.3, 0, cx, cy, this.radius);
+        body.addColorStop(0, 'rgba(200,170,255,0.9)');
+        body.addColorStop(0.5, 'rgba(130,80,230,0.85)');
+        body.addColorStop(1, 'rgba(60,20,140,0.8)');
         ctx.beginPath();
-        ctx.arc(cx, cy, this.radius * PIXEL * 2, 0, Math.PI * 2);
-        ctx.fillStyle = grd;
+        ctx.arc(cx, cy, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = body;
+        ctx.fill();
+        // Shine
+        const shine = ctx.createRadialGradient(cx - this.radius * 0.35, cy - this.radius * 0.35, 0, cx, cy, this.radius);
+        shine.addColorStop(0, 'rgba(255,255,255,0.12)');
+        shine.addColorStop(0.4, 'rgba(255,255,255,0)');
+        ctx.beginPath();
+        ctx.arc(cx, cy, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = shine;
         ctx.fill();
       }
     },
     {
-      // Small teal/cyan planet bottom left
-      getX: () => W * 0.06,
-      getY: () => H * 0.72,
-      radius: 7,
+      // Small teal planet — bottom left
+      getX: () => W * 0.07,
+      getY: () => H * 0.75,
+      radius: 28,
       draw(cx, cy) {
-        drawPixelCircle(cx, cy, this.radius, (px, py, dist, r) => {
-          const light = dist / r;
-          if (light > 0.9) return `rgba(180,240,255,0.9)`;
-          const band = Math.floor((px + r) / 3) % 2;
-          if (band === 0) return `rgba(40,180,200,${0.7 - light * 0.3})`;
-          return                 `rgba(20,140,170,${0.65 - light * 0.25})`;
-        });
-        const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, this.radius * PIXEL * 1.6);
-        grd.addColorStop(0, 'rgba(40,200,220,0.1)');
-        grd.addColorStop(1, 'rgba(40,200,220,0)');
+        // Atmosphere
+        const atmo = ctx.createRadialGradient(cx, cy, this.radius * 0.8, cx, cy, this.radius * 2);
+        atmo.addColorStop(0, 'rgba(40,200,220,0.08)');
+        atmo.addColorStop(1, 'rgba(40,200,220,0)');
         ctx.beginPath();
-        ctx.arc(cx, cy, this.radius * PIXEL * 1.6, 0, Math.PI * 2);
-        ctx.fillStyle = grd;
+        ctx.arc(cx, cy, this.radius * 2, 0, Math.PI * 2);
+        ctx.fillStyle = atmo;
+        ctx.fill();
+        // Body
+        const body = ctx.createRadialGradient(cx - this.radius * 0.3, cy - this.radius * 0.3, 0, cx, cy, this.radius);
+        body.addColorStop(0, 'rgba(120,230,240,0.9)');
+        body.addColorStop(0.5, 'rgba(30,170,190,0.85)');
+        body.addColorStop(1, 'rgba(10,80,110,0.8)');
+        ctx.beginPath();
+        ctx.arc(cx, cy, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = body;
+        ctx.fill();
+        // Shine
+        const shine = ctx.createRadialGradient(cx - this.radius * 0.35, cy - this.radius * 0.35, 0, cx, cy, this.radius);
+        shine.addColorStop(0, 'rgba(255,255,255,0.15)');
+        shine.addColorStop(0.4, 'rgba(255,255,255,0)');
+        ctx.beginPath();
+        ctx.arc(cx, cy, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = shine;
         ctx.fill();
       }
     }
