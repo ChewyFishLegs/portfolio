@@ -109,12 +109,12 @@ function onScroll() {
 window.addEventListener('scroll', onScroll, { passive: true });
 onScroll();
 
-/* ── CANVAS PARTICLES ─────────────────────────── */
+/* ── CANVAS STAR FIELD + PIXEL PLANETS ───────── */
 (function initCanvas() {
   const canvas = document.getElementById('heroCanvas');
   const ctx    = canvas.getContext('2d');
-  let W, H, particles = [];
-  const COUNT = 60;
+  let W, H, stars = [], shootingStars = [];
+  const STAR_COUNT = 180;
 
   function resize() {
     W = canvas.width  = window.innerWidth;
@@ -123,54 +123,198 @@ onScroll();
   resize();
   window.addEventListener('resize', resize);
 
-  class Particle {
-    constructor() { this.reset(); }
-    reset() {
-      this.x  = Math.random() * W;
-      this.y  = Math.random() * H;
-      this.vx = (Math.random() - 0.5) * 0.3;
-      this.vy = (Math.random() - 0.5) * 0.3;
-      this.r  = Math.random() * 1.5 + 0.5;
-      this.a  = Math.random() * 0.5 + 0.1;
+  const STAR_COLORS = [
+    'rgba(77,159,255,',
+    'rgba(155,109,255,',
+    'rgba(220,225,255,',
+    'rgba(130,191,255,',
+  ];
+
+  class Star {
+    constructor() { this.reset(true); }
+    reset(initial) {
+      this.x      = Math.random() * W;
+      this.y      = initial ? Math.random() * H : Math.random() * H * 0.7;
+      this.r      = Math.random() * 1.8 + 0.3;
+      this.color  = STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)];
+      this.baseA  = Math.random() * 0.6 + 0.2;
+      this.a      = this.baseA;
+      this.twinkleSpeed = Math.random() * 0.02 + 0.005;
+      this.twinkleDir   = Math.random() > 0.5 ? 1 : -1;
+      this.vy     = Math.random() * 0.05 + 0.01;
     }
     update() {
-      this.x += this.vx;
+      this.a += this.twinkleSpeed * this.twinkleDir;
+      if (this.a > this.baseA + 0.3 || this.a < this.baseA - 0.2) this.twinkleDir *= -1;
+      this.a = Math.max(0.05, Math.min(0.95, this.a));
       this.y += this.vy;
-      if (this.x < 0 || this.x > W) this.vx *= -1;
-      if (this.y < 0 || this.y > H) this.vy *= -1;
+      if (this.y > H) this.reset(false);
     }
     draw() {
+      const grd = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r * 3);
+      grd.addColorStop(0, this.color + this.a + ')');
+      grd.addColorStop(1, this.color + '0)');
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r * 3, 0, Math.PI * 2);
+      ctx.fillStyle = grd;
+      ctx.fill();
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(212, 168, 83, ${this.a})`;
+      ctx.fillStyle = this.color + this.a + ')';
       ctx.fill();
     }
   }
 
-  for (let i = 0; i < COUNT; i++) particles.push(new Particle());
+  class ShootingStar {
+    constructor() { this.reset(); }
+    reset() {
+      this.x     = Math.random() * W * 0.7;
+      this.y     = Math.random() * H * 0.4;
+      this.len   = Math.random() * 120 + 60;
+      this.speed = Math.random() * 6 + 4;
+      this.angle = Math.PI / 4 + (Math.random() - 0.5) * 0.3;
+      this.a     = 1;
+      this.active = false;
+      this.timer  = Math.random() * 400 + 200;
+    }
+    update() {
+      if (!this.active) { this.timer--; if (this.timer <= 0) this.active = true; return; }
+      this.x += Math.cos(this.angle) * this.speed;
+      this.y += Math.sin(this.angle) * this.speed;
+      this.a -= 0.025;
+      if (this.a <= 0) this.reset();
+    }
+    draw() {
+      if (!this.active) return;
+      const tx = this.x - Math.cos(this.angle) * this.len;
+      const ty = this.y - Math.sin(this.angle) * this.len;
+      const grd = ctx.createLinearGradient(tx, ty, this.x, this.y);
+      grd.addColorStop(0, `rgba(255,255,255,0)`);
+      grd.addColorStop(1, `rgba(180,210,255,${this.a})`);
+      ctx.beginPath();
+      ctx.moveTo(tx, ty);
+      ctx.lineTo(this.x, this.y);
+      ctx.strokeStyle = grd;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+  }
 
-  function drawConnections() {
-    for (let i = 0; i < particles.length; i++) {
-      for (let j = i + 1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x;
-        const dy = particles[i].y - particles[j].y;
-        const d  = Math.sqrt(dx * dx + dy * dy);
-        if (d < 130) {
-          ctx.beginPath();
-          ctx.moveTo(particles[i].x, particles[i].y);
-          ctx.lineTo(particles[j].x, particles[j].y);
-          ctx.strokeStyle = `rgba(212, 168, 83, ${(1 - d / 130) * 0.12})`;
-          ctx.lineWidth = 0.5;
-          ctx.stroke();
+  // ── PIXEL ART PLANETS ──────────────────────────
+  const PIXEL = 4; // pixel size
+
+  function drawPixelCircle(cx, cy, radius, colorFn) {
+    for (let py = -radius; py <= radius; py++) {
+      for (let px = -radius; px <= radius; px++) {
+        const dist = Math.sqrt(px * px + py * py);
+        if (dist <= radius) {
+          const color = colorFn(px, py, dist, radius);
+          if (color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(
+              Math.round(cx + px * PIXEL),
+              Math.round(cy + py * PIXEL),
+              PIXEL, PIXEL
+            );
+          }
         }
       }
     }
   }
 
+  const planets = [
+    {
+      // Ice planet — blue/white with horizontal bands
+      getX: () => W * 0.12,
+      getY: () => H * 0.18,
+      radius: 10,
+      draw(cx, cy) {
+        drawPixelCircle(cx, cy, this.radius, (px, py, dist, r) => {
+          const light = dist / r;
+          const band  = Math.floor((py + r) / 3) % 2;
+          if (light > 0.92) return `rgba(220,240,255,0.9)`;
+          if (band === 0)    return `rgba(77,140,220,${0.7 - light * 0.3})`;
+          return                    `rgba(110,170,255,${0.65 - light * 0.25})`;
+        });
+        // Glow
+        const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, this.radius * PIXEL * 1.8);
+        grd.addColorStop(0, 'rgba(77,159,255,0.12)');
+        grd.addColorStop(1, 'rgba(77,159,255,0)');
+        ctx.beginPath();
+        ctx.arc(cx, cy, this.radius * PIXEL * 1.8, 0, Math.PI * 2);
+        ctx.fillStyle = grd;
+        ctx.fill();
+      }
+    },
+    {
+      // Purple gas giant with ring
+      getX: () => W * 0.88,
+      getY: () => H * 0.28,
+      radius: 13,
+      draw(cx, cy) {
+        // Ring (behind planet)
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(1, 0.3);
+        ctx.beginPath();
+        ctx.arc(0, 0, this.radius * PIXEL * 1.7, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(155,109,255,0.25)';
+        ctx.lineWidth = PIXEL * 2.5;
+        ctx.stroke();
+        ctx.restore();
+
+        drawPixelCircle(cx, cy, this.radius, (px, py, dist, r) => {
+          const light = dist / r;
+          const stripe = Math.floor((py + r) / 4) % 3;
+          if (light > 0.9) return `rgba(200,180,255,0.95)`;
+          if (stripe === 0) return `rgba(120,70,220,${0.75 - light * 0.2})`;
+          if (stripe === 1) return `rgba(155,109,255,${0.7 - light * 0.2})`;
+          return                   `rgba(90,50,180,${0.7 - light * 0.2})`;
+        });
+
+        // Glow
+        const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, this.radius * PIXEL * 2);
+        grd.addColorStop(0, 'rgba(155,109,255,0.1)');
+        grd.addColorStop(1, 'rgba(155,109,255,0)');
+        ctx.beginPath();
+        ctx.arc(cx, cy, this.radius * PIXEL * 2, 0, Math.PI * 2);
+        ctx.fillStyle = grd;
+        ctx.fill();
+      }
+    },
+    {
+      // Small teal/cyan planet bottom left
+      getX: () => W * 0.06,
+      getY: () => H * 0.72,
+      radius: 7,
+      draw(cx, cy) {
+        drawPixelCircle(cx, cy, this.radius, (px, py, dist, r) => {
+          const light = dist / r;
+          if (light > 0.9) return `rgba(180,240,255,0.9)`;
+          const band = Math.floor((px + r) / 3) % 2;
+          if (band === 0) return `rgba(40,180,200,${0.7 - light * 0.3})`;
+          return                 `rgba(20,140,170,${0.65 - light * 0.25})`;
+        });
+        const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, this.radius * PIXEL * 1.6);
+        grd.addColorStop(0, 'rgba(40,200,220,0.1)');
+        grd.addColorStop(1, 'rgba(40,200,220,0)');
+        ctx.beginPath();
+        ctx.arc(cx, cy, this.radius * PIXEL * 1.6, 0, Math.PI * 2);
+        ctx.fillStyle = grd;
+        ctx.fill();
+      }
+    }
+  ];
+
+  for (let i = 0; i < STAR_COUNT; i++) stars.push(new Star());
+  for (let i = 0; i < 3; i++) shootingStars.push(new ShootingStar());
+
   function loop() {
     ctx.clearRect(0, 0, W, H);
-    particles.forEach(p => { p.update(); p.draw(); });
-    drawConnections();
+    // Draw planets first (behind stars)
+    planets.forEach(p => p.draw(p.getX(), p.getY()));
+    stars.forEach(s => { s.update(); s.draw(); });
+    shootingStars.forEach(s => { s.update(); s.draw(); });
     requestAnimationFrame(loop);
   }
   loop();
